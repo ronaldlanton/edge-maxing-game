@@ -52,7 +52,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ playerName, onGameOver }) => {
     
     // Update fill level - it drops over time
     setFillLevel(prevLevel => {
-      const newLevel = Math.max(MIN_LEVEL, prevLevel - DROP_RATE);
+      const newLevel = Math.max(MIN_LEVEL, prevLevel - DROP_RATE * deltaTime);
       
       // Game over if level drops to zero
       if (newLevel <= MIN_LEVEL) {
@@ -68,7 +68,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ playerName, onGameOver }) => {
       // Points calculated based on current fill level
       // Higher fill levels give exponentially more points
       const levelFactor = fillLevel / MAX_LEVEL;
-      const pointsThisFrame = Math.floor(levelFactor * levelFactor * POINTS_MULTIPLIER * 100);
+      const pointsThisFrame = Math.floor(levelFactor * levelFactor * POINTS_MULTIPLIER * 100 * deltaTime);
       return prevScore + pointsThisFrame;
     });
     
