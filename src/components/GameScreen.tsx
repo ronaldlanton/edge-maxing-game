@@ -1,156 +1,112 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface GameScreenProps {
   playerName: string;
-  onGameOver: (score: number, time: number) => void;
+  highScore: number;
+  onGameOver: (score: number) => void;
 }
 
-const GameScreen: React.FC<GameScreenProps> = ({ playerName, onGameOver }) => {
-  // Game parameters
-  const MAX_LEVEL = 100; // Maximum fill level (%)
-  const MIN_LEVEL = 0;   // Minimum fill level (%)
-  const FILL_RATE = 5;   // How much each tap fills (%)
-  const DROP_RATE = 1; // How fast the level drops per frame (%)
-  const POINTS_MULTIPLIER = 2; // Points multiplier for high levels
-  
-  // Game state
-  const [fillLevel, setFillLevel] = useState<number>(0);
-  const [score, setScore] = useState<number>(0);
-  const [time, setTime] = useState<number>(0);
-  const [isGameActive, setIsGameActive] = useState<boolean>(true);
-  const [highScore, setHighScore] = useState<number>(0);
-  
-  // Animation frame reference
-  const animationFrameRef = useRef<number | null>(null);
-  
-  // Time tracking
-  const lastUpdateTimeRef = useRef<number>(Date.now());
-  const gameStartTimeRef = useRef<number>(Date.now());
-  
-  // Get player's high score from leaderboard on mount
+const GameScreen: React.FC<GameScreenProps> = ({ playerName, highScore, onGameOver }) => {
+  const [score, setScore] = useState(0);
+  const [playerPosition, setPlayerPosition] = useState({ x: 50, y: 50 });
+  const gameAreaRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number>();
+  const lastUpdateTimeRef = useRef<number>(0);
+  const velocityRef = useRef({ x: 0, y: 0 });
+  const isMovingRef = useRef(false);
+
   useEffect(() => {
-    const savedLeaderboard = localStorage.getItem('edgeMaxingLeaderboard');
-    if (savedLeaderboard) {
-      const leaderboard = JSON.parse(savedLeaderboard);
-      const playerEntry = leaderboard.find((entry: any) => entry.name === playerName);
-      if (playerEntry) {
-        setHighScore(playerEntry.score);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        isMovingRef.current = true;
       }
-    }
-  }, [playerName]);
-  
-  // Handle game loop
-  const gameLoop = useCallback(() => {
-    if (!isGameActive) return;
-    
-    const currentTime = Date.now();
-    const deltaTime = (currentTime - lastUpdateTimeRef.current) / 1000; // in seconds
-    lastUpdateTimeRef.current = currentTime;
-    
-    // Update time
-    setTime(Math.floor((currentTime - gameStartTimeRef.current) / 1000));
-    
-    // Update fill level - it drops over time
-    setFillLevel(prevLevel => {
-      const newLevel = Math.max(MIN_LEVEL, prevLevel - DROP_RATE);
-      
-      // Game over if level drops to zero
-      if (newLevel <= MIN_LEVEL) {
-        setIsGameActive(false);
-        return MIN_LEVEL;
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        isMovingRef.current = false;
       }
-      
-      return newLevel;
-    });
-    
-    // Update score - more points when near the top
-    setScore(prevScore => {
-      // Points calculated based on current fill level
-      // Higher fill levels give exponentially more points
-      const levelFactor = fillLevel / MAX_LEVEL;
-      const pointsThisFrame = Math.floor(levelFactor * levelFactor * POINTS_MULTIPLIER * 100);
-      return prevScore + pointsThisFrame;
-    });
-    
-    // Continue the game loop
-    animationFrameRef.current = requestAnimationFrame(gameLoop);
-  }, [isGameActive, fillLevel]);
-  
-  // Handle tap to fill
-  const handleTap = () => {
-    if (!isGameActive) return;
-    
-    setFillLevel(prevLevel => {
-      const newLevel = prevLevel + FILL_RATE;
-      
-      // Game over if level exceeds maximum
-      if (newLevel >= MAX_LEVEL) {
-        setIsGameActive(false);
-        return MAX_LEVEL;
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
-      
-      return newLevel;
-    });
-  };
-  
-  // Start game loop
+    };
+  }, []);
+
   useEffect(() => {
-    gameStartTimeRef.current = Date.now();
-    lastUpdateTimeRef.current = Date.now();
-    animationFrameRef.current = requestAnimationFrame(gameLoop);
-    
-    // Clean up animation frame on unmount
+    const updateGame = (timestamp: number) => {
+      if (!lastUpdateTimeRef.current) {
+        lastUpdateTimeRef.current = timestamp;
+      }
+
+      const deltaTime = (timestamp - lastUpdateTimeRef.current) / 1000;
+      lastUpdateTimeRef.current = timestamp;
+
+      if (isMovingRef.current) {
+        velocityRef.current.x += 200 * deltaTime;
+        velocityRef.current.y += 200 * deltaTime;
+      } else {
+        velocityRef.current.x = Math.max(0, velocityRef.current.x - 100 * deltaTime);
+        velocityRef.current.y = Math.max(0, velocityRef.current.y - 100 * deltaTime);
+      }
+
+      const newPosition = {
+        x: playerPosition.x + velocityRef.current.x * deltaTime,
+        y: playerPosition.y + velocityRef.current.y * deltaTime,
+      };
+
+      if (gameAreaRef.current) {
+        const bounds = gameAreaRef.current.getBoundingClientRect();
+        if (
+          newPosition.x < 0 ||
+          newPosition.x > bounds.width - 20 ||
+          newPosition.y < 0 ||
+          newPosition.y > bounds.height - 20
+        ) {
+          onGameOver(Math.floor(score));
+          return;
+        }
+      }
+
+      setPlayerPosition(newPosition);
+      setScore((prevScore) => prevScore + deltaTime * (velocityRef.current.x + velocityRef.current.y) / 100);
+
+      animationFrameRef.current = requestAnimationFrame(updateGame);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(updateGame);
+
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [gameLoop]);
-  
-  // Handle game over
-  useEffect(() => {
-    if (!isGameActive) {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      onGameOver(score, time);
-    }
-  }, [isGameActive, onGameOver, score, time]);
-  
+  }, [onGameOver, playerPosition, score]);
+
   return (
-    <>
-      <div className="game-screen" onClick={handleTap}>
-        <div className="game-info">
-          <div className="time-display">
-            <p>Time: {time}s</p>
-          </div>
-        </div>
-        
-        <div className="game-area">
-          <div className="level-bar-container">
-            <div className="score-above-bar">
-              <p>Score: {score}</p>
-            </div>
-            <div 
-              className="level-bar-fill" 
-              style={{ height: `${fillLevel}%` }}
-            />
-            <div className="level-bar-marker" style={{ bottom: '90%' }} />
-          </div>
-          
-          <div className="tap-instruction">
-            <p>TAP TO FILL</p>
-          </div>
-        </div>
+    <div className="game-screen">
+      <div className="score">Score: {Math.floor(score)}</div>
+      <div className="game-area" ref={gameAreaRef}>
+        <div
+          className="player"
+          style={{
+            left: `${playerPosition.x}px`,
+            top: `${playerPosition.y}px`,
+          }}
+        />
       </div>
-      
-      <div className="game-footer">
-        <div className="agent-info">
-          <p className="agent-name">{playerName}</p>
-          <p className="agent-high-score">High Score: {highScore}</p>
-        </div>
+      <div className="footer">
+        <div className="player-info">Player: {playerName}</div>
+        <div className="high-score">High Score: {highScore}</div>
       </div>
-    </>
+    </div>
   );
 };
 
