@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Maxing</title>
+    <link rel="icon" href="favicon.ico" />
+    <link rel="manifest" href="manifest.json" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent; /* Prevent blue flash on tap */
+            user-select: none; /* Prevent text selection */
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #111111;
+            color: #33ff66;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+            text-shadow: 0 0 5px rgba(51, 255, 102, 0.5);
+        }
+        
+        .app {
+            text-align: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: none;
+            background-color: #000000;
+        }
+        
+        /* Start Screen */
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 500px;
+            padding: 2rem;
+            border: 2px solid #33ff66;
+            border-radius: 8px;
+            background-color: #000000;
+            box-shadow: 0 0 20px rgba(51, 255, 102, 0.3);
+        }
+        
+        .start-screen h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #33ff66;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            text-shadow: 0 0 10px rgba(51, 255, 102, 0.7);
+        }
+        
+        .crt-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.15;
+        }
+        
+        .retro-code {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .retro-input {
+            background-color: #0a0a0a;
+            color: #33ff66;
+            border: 1px solid #33ff66;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(51, 255, 102, 0.3);
+        }
+        
+        .game-instructions {
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+        
+        .returning-player {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            animation: fadeIn 0.5s;
+            width: 100%;
+        }
+        
+        .returning-player p {
+            font-size: 1.2rem;
+            color: #33ff66;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 8px rgba(51, 255, 102, 0.5);
+        }
+        
+        .returning-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        .new-player-button {
+            background-color: #0a0a0a;
+            color: #ff6b6b;
+            border: 2px solid #ff6b6b;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        .new-player-button:hover {
+            background-color: #ff6b6b;
+            color: #0a0a0a;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            color: #33ff66;
+            text-shadow: 0 0 5px rgba(51, 255, 102, 0.5);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            margin-top: 0.5rem;
+            text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+        }
+        
+        .start-button {
+            background-color: #0a0a0a;
+            color: #33ff66;
+            border: 2px solid #33ff66;
+            padding: 0.8rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            box-shadow: 0 0 10px rgba(51, 255, 102, 0.3);
+        }
+        
+        .start-button:hover {
+            background-color: #33ff66;
+            color: #0a0a0a;
+            box-shadow: 0 0 15px rgba(51, 255, 102, 0.7);
+        }
+        
+        /* Game Screen */
+        .game-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            background-image: none;
+            background-color: #000000;
+            padding-bottom: 70px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 1.5rem;
+            background-color: rgba(0, 0, 0, 0.95);
+            border-bottom: 2px solid #33ff66;
+        }
+        
+        .player-info, .score-display, .time-display {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #33ff66;
+            letter-spacing: 1px;
+        }
+        
+        .score-display-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            z-index: 50;
+        }
+        
+        .score-above-bar {
+            position: relative;
+            color: #33ff66;
+            font-size: 1.6rem;
+            font-weight: bold;
+            white-space: nowrap;
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 100;
+            border: 2px solid #33ff66;
+            box-shadow: 0 0 15px rgba(51, 255, 102, 0.5);
+            text-shadow: 0 0 5px rgba(51, 255, 102, 0.7);
+            min-width: 180px;
+            text-align: center;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+        
+        @keyframes scoreFlash {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); color: #00cc66; }
+            100% { transform: scale(1); }
+        }
+        
+        .score-flash {
+            animation: scoreFlash 0.3s ease-in-out;
+        }
+        
+        .bonus-flash {
+            animation: bonusFlash 0.5s ease-in-out;
+        }
+        
+        @keyframes bonusFlash {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.6); color: #00ffff; text-shadow: 0 0 10px #00ffff; }
+            100% { transform: scale(1); }
+        }
+        
+        .countdown-timer {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 0;
+            text-align: center;
+            font-family: 'VT323', 'Courier New', monospace;
+            text-shadow: 0 0 8px rgba(255, 107, 107, 0.7);
+            background-color: #0a0a0a;
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+            padding: 0.3rem 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        @keyframes pulseTimer {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; text-shadow: 0 0 12px rgba(255, 107, 107, 0.7); }
+        }
+        
+        .countdown-timer.warning {
+            color: #ff3333;
+            animation: pulseWarning 0.5s infinite alternate;
+            border-color: #ff3333;
+        }
+        
+        @keyframes pulseWarning {
+            0% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.05); text-shadow: 0 0 15px rgba(255, 51, 51, 0.9); }
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            width: 100%;
+            position: relative;
+            min-height: 400px;
+        }
+        
+        .level-bar-container {
+            position: relative;
+            width: 80px;
+            height: 300px;
+            background-color: #0a0a0a;
+            border: 2px solid #33ff66;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1rem auto;
+            box-shadow: 0 0 15px rgba(51, 255, 102, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .level-bar-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: #33ff66;
+            transition: height 0.1s ease;
+            box-shadow: 0 0 10px #33ff66;
+        }
+        
+        .level-bar-marker {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #ffffff;
+            box-shadow: 0 0 8px #ffffff;
+        }
+        
+        .level-bar-bonus-marker {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #00ffff;
+            box-shadow: 0 0 8px #00ffff, 0 0 15px #00ffff;
+            z-index: 2;
+        }
+        
+        /* Point Indicators */
+        .point-indicator {
+            position: absolute;
+            font-weight: bold;
+            font-size: 2rem;
+            opacity: 1;
+            z-index: 10;
+            pointer-events: none;
+            animation: floatUp 1.5s ease-out forwards;
+            white-space: nowrap; /* Prevent text wrapping */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Center alignment */
+            top: -40px; /* Position above the container */
+            font-family: 'VT323', 'Courier New', monospace;
+            text-transform: uppercase;
+        }
+        
+        .point-indicator-green {
+            color: #00cc66;
+            text-shadow: 0 0 5px #00cc66, 0 0 10px #00cc66;
+        }
+        
+        .point-indicator-blue {
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translate(-50%, 0); opacity: 1; }
+            100% { transform: translate(-50%, -70px); opacity: 0; }
+        }
+        
+        .tap-instruction {
+            margin-top: 1rem;
+            animation: pulse 1.5s infinite;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            border: 1px solid #33ff66;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            background-color: #0a0a0a;
+            box-shadow: 0 0 10px rgba(51, 255, 102, 0.3);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; text-shadow: 0 0 8px rgba(51, 255, 102, 0.7); }
+            100% { opacity: 0.5; }
+        }
+        
+        /* Game Over Screen */
+        .game-over-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 500px;
+            padding: 2rem;
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+            background-color: #000000;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+        
+        .game-over-screen h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ff6b6b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .results {
+            background-color: #000000;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            width: 100%;
+            text-align: left;
+            border: 1px solid #33ff66;
+        }
+        
+        .results h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #61dafb;
+        }
+        
+        .final-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #61dafb;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .restart-button, .leaderboard-button, .back-button {
+            background-color: #0a0a0a;
+            color: #33ff66;
+            border: 2px solid #33ff66;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            box-shadow: 0 0 10px rgba(51, 255, 102, 0.3);
+            text-transform: uppercase;
+        }
+        
+        .restart-button:hover, .leaderboard-button:hover, .back-button:hover {
+            background-color: #33ff66;
+            color: #0a0a0a;
+            box-shadow: 0 0 15px rgba(51, 255, 102, 0.7);
+        }
+        
+        /* Leaderboard */
+        .leaderboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 600px;
+            width: 100%;
+            padding: 2rem;
+            border: 2px solid #33ff66;
+            border-radius: 8px;
+            background-color: #000000;
+            box-shadow: 0 0 20px rgba(51, 255, 102, 0.3);
+        }
+        
+        .leaderboard h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #33ff66;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            background-color: #000000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #33ff66;
+            box-shadow: 0 0 15px rgba(51, 255, 102, 0.2);
+        }
+        
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(51, 255, 102, 0.3);
+        }
+        
+        .leaderboard-table th {
+            background-color: #000000;
+            color: #33ff66;
+            font-weight: bold;
+            border-bottom: 2px solid #33ff66;
+            text-shadow: 0 0 5px rgba(51, 255, 102, 0.5);
+        }
+        
+        .leaderboard-table tr:nth-child(even) {
+            background-color: #0a0a0a;
+        }
+        
+        .no-entries {
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Game Over Popup */
+        .game-over-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            z-index: 100;
+            max-width: 80%;
+            animation: fadeIn 0.5s ease;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .game-over-popup h2 {
+            font-size: 2rem;
+            color: #ff6b6b;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(255, 107, 107, 0.7);
+        }
+        
+        .game-over-popup .reason {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #33ff66;
+            text-shadow: 0 0 5px rgba(51, 255, 102, 0.5);
+        }
+        
+        .game-over-popup button {
+            background-color: #0a0a0a;
+            color: #33ff66;
+            border: 2px solid #33ff66;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(51, 255, 102, 0.3);
+        }
+        
+        .game-over-popup button:hover {
+            background-color: #33ff66;
+            color: #0a0a0a;
+            box-shadow: 0 0 15px rgba(51, 255, 102, 0.7);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Mission Success Indicator */
+        @keyframes missionSuccessAnimation {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        
+        .mission-success {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 90%;
+            max-width: 400px;
+            transform: translate(-50%, -50%);
+            color: #33ff66;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            z-index: 10000;
+            text-shadow: 0 0 10px #33ff66, 0 0 20px #33ff66;
+            animation: missionSuccessAnimation 3s forwards;
+            pointer-events: none;
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: 2px solid #33ff66;
+            box-shadow: 0 0 25px rgba(51, 255, 102, 0.5);
+        }
+        
+        .game-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #33ff66;
+            text-align: center;
+            padding: 0.7rem;
+            border-top: 2px solid #33ff66;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(51, 255, 102, 0.3);
+        }
+        
+        .agent-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .agent-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 0 0 5px rgba(51, 255, 102, 0.5);
+        }
+        
+        .agent-high-score {
+            font-size: 1.2rem;
+            margin: 0.2rem 0 0;
+            text-shadow: 0 0 5px rgba(51, 255, 102, 0.5);
+        }
+        
+        .time-display {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #33ff66;
+            text-shadow: 0 0 10px rgba(51, 255, 102, 0.7);
+            padding: 0.5rem 1rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid #33ff66;
+            border-radius: 6px;
+            box-shadow: 0 0 15px rgba(51, 255, 102, 0.3);
+        }
+        
+        /* New CSS for high score notification */
+        .new-high-score {
+            color: #33ff66;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+            text-shadow: 0 0 10px rgba(51, 255, 102, 0.7);
+            animation: pulseHighScore 1s infinite alternate;
+        }
+        
+        @keyframes pulseHighScore {
+            0% { opacity: 0.8; text-shadow: 0 0 5px rgba(51, 255, 102, 0.5); }
+            100% { opacity: 1; text-shadow: 0 0 15px rgba(51, 255, 102, 0.9); }
+        }
+        
+        @media (max-height: 700px) {
+            .game-screen {
+                padding-bottom: 60px;
+            }
+            
+            .level-bar-container {
+                height: 250px;
+            }
+            
+            .game-info {
+                padding: 0.8rem;
+            }
+            
+            .score-display-container {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- All screens will be dynamically inserted here -->
+    </div>
+
+    <script>
+        console.log('Game initializing...');
+        // Game state and constants
+        const MAX_LEVEL = 100;
+        const MIN_LEVEL = 0;
+        const FILL_RATE = 15;
+        const DROP_RATE = 0.5; // Increased from 0.2 to 0.5 for faster drop
+        const RED_LINE_POSITION = 90;
+        const BONUS_LINE_POSITION = 97;
+        const POINTS_MULTIPLIER = 2;
+        const INITIAL_TIME = 60; // 60 seconds (1 minute)
+        const TARGET_SCORE = 40; // Target score to win
+        
+        let gameState = 'start'; // start, ready, playing, gameOver, leaderboard
+        let playerName = '';
+        let lastPlayerName = ''; // Store the last used player name
+        let score = 0;
+        let gameTime = INITIAL_TIME; // Start with 60 seconds
+        let fillLevel = 0;
+        let isGameActive = false;
+        let animationFrameId = null;
+        let lastUpdateTime = 0;
+        let gameStartTime = 0;
+        let hasPassedRedLine = false;
+        let hasPassedBonusLine = false;
+        let gameOverReason = '';
+        let targetReached = false;
+        
+        // Get leaderboard from localStorage
+        let leaderboard = [];
+        try {
+            const savedLeaderboard = localStorage.getItem('edgeMaxingLeaderboard');
+            leaderboard = savedLeaderboard ? JSON.parse(savedLeaderboard) : [];
+            console.log('Leaderboard loaded:', leaderboard);
+        } catch (e) {
+            console.error('Error loading leaderboard:', e);
+            leaderboard = [];
+        }
+        
+        // Get app container
+        const appElement = document.getElementById('app');
+        console.log('App element found:', appElement);
+        
+        // Initialize the game
+        function init() {
+            renderStartScreen();
+        }
+        
+        // ========== Start Screen ==========
+        function renderStartScreen() {
+            gameState = 'start';
+            
+            // Try to load the last player name from localStorage
+            try {
+                const savedName = localStorage.getItem('lastPlayerName');
+                if (savedName) {
+                    lastPlayerName = savedName;
+                }
+            } catch (e) {
+                console.error('Error loading player name:', e);
+            }
+            
+            appElement.innerHTML = `
+                <div class="start-screen">
+                    <h1>EDGE MAXING</h1>
+                    <div class="crt-lines"></div>
+                    <p class="game-instructions">
+                        <span class="retro-code">[INSTRUCTION]</span> TAP TO FILL THE BAR. DON'T LET IT DROP TO ZERO OR OVERFLOW.
+                        <br />
+                        <span class="retro-code">[MISSION]</span> SCORE ${TARGET_SCORE} POINTS IN ${INITIAL_TIME} SECONDS!
+                        <br />
+                        <span style="color: #ffffff; text-shadow: 0 0 5px #ffffff;">[WHITE LINE = 1 PT]</span> | <span style="color: #00ffff; text-shadow: 0 0 5px #00ffff;">[BLUE LINE = 3 PTS]</span>
+                    </p>
+                    
+                    ${lastPlayerName ? `
+                        <div class="returning-player">
+                            <p>WELCOME BACK, AGENT ${lastPlayerName.toUpperCase()}</p>
+                            <div class="buttons returning-buttons">
+                                <button class="start-button" id="continue-button">CONTINUE AS ${lastPlayerName.toUpperCase()}</button>
+                                <button class="new-player-button" id="switch-player-button">CHANGE AGENT</button>
+                            </div>
+                        </div>
+                    ` : `
+                        <form id="start-form">
+                            <div class="form-group">
+                                <label for="playerName">ENTER AGENT CODENAME:</label>
+                                <input 
+                                    type="text" 
+                                    id="playerName" 
+                                    placeholder="AGENT NAME"
+                                    class="retro-input"
+                                />
+                                <p class="error" id="name-error"></p>
+                            </div>
+                            
+                            <button type="submit" class="start-button">BEGIN MISSION</button>
+                        </form>
+                    `}
+                </div>
+            `;
+            
+            // Add event listeners
+            if (lastPlayerName) {
+                document.getElementById('continue-button').addEventListener('click', () => {
+                    playerName = lastPlayerName;
+                    startGame();
+                });
+                document.getElementById('switch-player-button').addEventListener('click', showNameForm);
+            } else {
+                document.getElementById('start-form').addEventListener('submit', handleStartGame);
+            }
+        }
+        
+        function showNameForm() {
+            const startScreen = document.querySelector('.start-screen');
+            const returningPlayer = document.querySelector('.returning-player');
+            
+            if (startScreen && returningPlayer) {
+                returningPlayer.innerHTML = `
+                    <form id="start-form">
+                        <div class="form-group">
+                            <label for="playerName">ENTER AGENT CODENAME:</label>
+                            <input 
+                                type="text" 
+                                id="playerName" 
+                                placeholder="AGENT NAME"
+                                class="retro-input"
+                            />
+                            <p class="error" id="name-error"></p>
+                        </div>
+                        
+                        <button type="submit" class="start-button">BEGIN MISSION</button>
+                    </form>
+                `;
+                
+                document.getElementById('start-form').addEventListener('submit', handleStartGame);
+            }
+        }
+        
+        function handleStartGame(e) {
+            e.preventDefault();
+            
+            const nameInput = document.getElementById('playerName');
+            const name = nameInput.value.trim();
+            
+            if (name === '') {
+                document.getElementById('name-error').textContent = 'Please enter your name';
+                return;
+            }
+            
+            playerName = name;
+            startGame();
+        }
+        
+        // ========== Game Screen ==========
+        function startGame() {
+            gameState = 'ready'; // Changed from 'playing' to 'ready'
+            score = 0;
+            gameTime = INITIAL_TIME; // Start with 60 seconds
+            fillLevel = 20; // Start with some initial fill so it doesn't end immediately
+            isGameActive = false; // Don't start the game loop yet
+            hasPassedRedLine = false;
+            hasPassedBonusLine = false;
+            targetReached = false;
+            gameOverReason = '';
+            
+            renderGameScreen();
+            
+            // Add tap event listener to the game screen
+            document.querySelector('.game-screen').addEventListener('click', handleGameAreaClick);
+            
+            // Add keyboard listener for spacebar
+            document.addEventListener('keydown', handleKeyDown);
+        }
+        
+        function handleKeyDown(e) {
+            // Check if it's spacebar
+            if (e.code === 'Space' || e.keyCode === 32) {
+                if (gameState === 'ready') {
+                    startPlaying();
+                } else if (gameState === 'playing') {
+                    handleTap();
+                }
+                // Prevent spacebar from scrolling the page
+                e.preventDefault();
+            }
+        }
+        
+        function handleGameAreaClick() {
+            if (gameState === 'ready') {
+                startPlaying();
+            } else if (gameState === 'playing') {
+                handleTap();
+            }
+        }
+        
+        function startPlaying() {
+            gameState = 'playing';
+            isGameActive = true;
+            
+            // Replace the tap to start message with the tap to fill message
+            const tapInstructionElement = document.querySelector('.tap-instruction');
+            if (tapInstructionElement) {
+                tapInstructionElement.innerHTML = '<p>TAP TO FILL</p>';
+            }
+            
+            // Setup game loop
+            gameStartTime = Date.now();
+            lastUpdateTime = Date.now();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+        
+        function renderGameScreen() {
+            appElement.innerHTML = `
+                <div class="game-screen">
+                    <div class="game-info">
+                        <div class="time-display">
+                            <span id="time">${formatTime(gameTime)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="game-area">
+                        <div class="score-display-container">
+                            <div class="score-above-bar">
+                                <p>SCORE: <span id="score">0</span>/${TARGET_SCORE}</p>
+                            </div>
+                        </div>
+                        <div class="level-bar-container">
+                            <div 
+                                class="level-bar-fill" 
+                                id="level-bar"
+                                style="height: ${fillLevel}%"
+                            ></div>
+                            <div class="level-bar-marker" style="bottom: ${RED_LINE_POSITION}%"></div>
+                            <div class="level-bar-bonus-marker" style="bottom: ${BONUS_LINE_POSITION}%"></div>
+                        </div>
+                        
+                        <div class="tap-instruction">
+                            <p>TAP OR PRESS SPACEBAR TO START</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-footer">
+                    <div class="agent-info">
+                        <p class="agent-name">${playerName}</p>
+                        <p class="agent-high-score">High Score: ${getPlayerHighScore(playerName)}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Format time to show seconds or minutes:seconds
+        function formatTime(timeInSeconds) {
+            if (timeInSeconds < 60) {
+                return Math.ceil(timeInSeconds) + "s";
+            } else {
+                const minutes = Math.floor(timeInSeconds / 60);
+                const seconds = Math.ceil(timeInSeconds % 60);
+                return `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+            }
+        }
+        
+        // Function to create a point indicator
+        function createPointIndicator(points, isBonus) {
+            try {
+                // Get the level bar container for positioning
+                const container = document.querySelector('.level-bar-container');
+                if (!container) {
+                    console.error('Level bar container not found for point indicator');
+                    return;
+                }
+                
+                // Create the indicator element
+                const indicator = document.createElement('div');
+                indicator.className = `point-indicator ${isBonus ? 'point-indicator-blue' : 'point-indicator-green'}`;
+                indicator.textContent = `+${points}`;
+                
+                // Position the indicator above the level bar
+                const rect = container.getBoundingClientRect();
+                indicator.style.position = 'absolute';
+                indicator.style.top = `${rect.top - 50}px`;
+                indicator.style.left = `${rect.left + rect.width / 2}px`;
+                
+                // Add the indicator to the game area for better visibility
+                document.querySelector('.game-area').appendChild(indicator);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    indicator.remove();
+                }, 1500);
+            } catch (e) {
+                console.error('Error creating point indicator:', e);
+            }
+        }
+        
+        // Handle game loop
+        function gameLoop() {
+            if (!isGameActive || gameState !== 'playing') return;
+            
+            try {
+                const currentTime = Date.now();
+                const deltaTime = (currentTime - lastUpdateTime) / 1000; // in seconds
+                lastUpdateTime = currentTime;
+                
+                // Update time (countdown)
+                gameTime = Math.max(0, gameTime - deltaTime);
+                const timeElement = document.getElementById('time');
+                if (timeElement) {
+                    timeElement.textContent = formatTime(gameTime);
+                    
+                    // Add warning class for last 10 seconds
+                    if (gameTime <= 10) {
+                        timeElement.parentElement.classList.add('warning');
+                    } else {
+                        timeElement.parentElement.classList.remove('warning');
+                    }
+                } else {
+                    console.error('Time element not found');
+                }
+                
+                // Update score display above fill bar
+                const scoreElement = document.getElementById('score');
+                if (scoreElement) {
+                    scoreElement.textContent = score.toString();
+                }
+                
+                // Game over if time runs out
+                if (gameTime <= 0) {
+                    isGameActive = false;
+                    gameTime = 0;
+                    gameState = 'gameOver';
+                    
+                    // Set game over reason based on score
+                    if (score >= TARGET_SCORE) {
+                        gameOverReason = `MISSION COMPLETE! FINAL SCORE: ${score} POINTS IN ${INITIAL_TIME} SECONDS!`;
+                    } else {
+                        gameOverReason = `TIME'S UP! YOU NEEDED ${TARGET_SCORE - score} MORE POINTS TO REACH TARGET.`;
+                    }
+                    
+                    handleGameOver();
+                    return;
+                }
+                
+                // Update fill level - it drops over time
+                fillLevel = Math.max(MIN_LEVEL, fillLevel - DROP_RATE);
+                
+                // Game over if level drops to zero
+                if (fillLevel <= MIN_LEVEL) {
+                    isGameActive = false;
+                    fillLevel = MIN_LEVEL;
+                    gameState = 'gameOver';
+                    gameOverReason = 'CRITICAL FAILURE: POWER LEVEL DEPLETED!';
+                    handleGameOver();
+                    return;
+                }
+                
+                // Update the visual fill level
+                const levelBarElement = document.getElementById('level-bar');
+                if (levelBarElement) {
+                    levelBarElement.style.height = `${fillLevel}%`;
+                } else {
+                    console.error('Level bar element not found');
+                }
+                
+                // Victory check - if we reach the target score before time runs out
+                if (score >= TARGET_SCORE) {
+                    // Don't end the game, just indicate victory has been achieved
+                    // Show a special indicator if we haven't shown it yet
+                    if (!targetReached && score >= TARGET_SCORE) {
+                        targetReached = true;
+                        createMissionSuccess();
+                    }
+                }
+                
+                // Score check - prioritize the bonus line if crossed
+                let pointsEarned = 0;
+                let showBonusIndicator = false;
+                
+                // Define a small buffer to ensure visual alignment
+                const collisionBuffer = 0.5;
+                
+                // Check if we crossed the bonus line (for more points)
+                if (fillLevel >= (BONUS_LINE_POSITION + collisionBuffer) && !hasPassedBonusLine) {
+                    // Crossed the bonus line going up
+                    hasPassedBonusLine = true;
+                    pointsEarned = 3; // Award 3 points for crossing the bonus line
+                    showBonusIndicator = true;
+                    
+                    // Also set the red line flag so we don't get double points
+                    hasPassedRedLine = true;
+                } else if (fillLevel < (BONUS_LINE_POSITION - collisionBuffer) && hasPassedBonusLine) {
+                    // Reset the flag when dropping below the bonus line
+                    hasPassedBonusLine = false;
+                }
+                
+                // Check if we crossed the regular line (for scoring) - only if we didn't cross the bonus line
+                if (pointsEarned === 0 && fillLevel >= (RED_LINE_POSITION + collisionBuffer) && !hasPassedRedLine) {
+                    // Crossed the regular line going up
+                    hasPassedRedLine = true;
+                    pointsEarned = 1;
+                } else if (fillLevel < (RED_LINE_POSITION - collisionBuffer) && hasPassedRedLine) {
+                    // Reset the flag when dropping below the line
+                    hasPassedRedLine = false;
+                }
+                
+                // Update score if points were earned
+                if (pointsEarned > 0) {
+                    score += pointsEarned;
+                    
+                    // Show a visual indication of score
+                    const scoreElement = document.getElementById('score');
+                    if (scoreElement) {
+                        scoreElement.textContent = score.toString();
+                        // Add appropriate flash animation
+                        if (showBonusIndicator) {
+                            scoreElement.parentElement.classList.add('bonus-flash');
+                            setTimeout(() => {
+                                scoreElement.parentElement.classList.remove('bonus-flash');
+                            }, 500);
+                        } else {
+                            scoreElement.parentElement.classList.add('score-flash');
+                            setTimeout(() => {
+                                scoreElement.parentElement.classList.remove('score-flash');
+                            }, 300);
+                        }
+                    }
+                    
+                    // Create floating point indicator
+                    createPointIndicator(pointsEarned, showBonusIndicator);
+                }
+                
+                // Continue the game loop
+                animationFrameId = requestAnimationFrame(gameLoop);
+            } catch (e) {
+                console.error('Error in game loop:', e);
+                isGameActive = false;
+            }
+        }
+        
+        function handleTap() {
+            if (!isGameActive || gameState !== 'playing') return;
+            
+            try {
+                fillLevel = fillLevel + FILL_RATE;
+                
+                // Game over if level exceeds maximum
+                if (fillLevel >= MAX_LEVEL) {
+                    isGameActive = false;
+                    fillLevel = MAX_LEVEL;
+                    gameState = 'gameOver';
+                    gameOverReason = 'SYSTEM OVERLOAD: ENERGY CONTAINMENT FAILURE!';
+                    
+                    const levelBarElement = document.getElementById('level-bar');
+                    if (levelBarElement) {
+                        levelBarElement.style.height = `${fillLevel}%`;
+                    }
+                    
+                    handleGameOver();
+                    return;
+                }
+                
+                // Update the visual fill level
+                const levelBarElement = document.getElementById('level-bar');
+                if (levelBarElement) {
+                    levelBarElement.style.height = `${fillLevel}%`;
+                } else {
+                    console.error('Level bar element not found in handleTap');
+                }
+            } catch (e) {
+                console.error('Error in handleTap:', e);
+            }
+        }
+        
+        function handleGameOver() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            
+            // Reset target reached state for next game
+            targetReached = false;
+            
+            // Remove event listeners
+            document.removeEventListener('keydown', handleKeyDown);
+            
+            // Check if the score is a new high score
+            const currentHighScore = getPlayerHighScore(playerName);
+            const isNewHighScore = score > currentHighScore;
+            
+            // Only add to leaderboard if this is a new high score
+            if (isNewHighScore) {
+                // Find and remove any existing entry for this player
+                const playerIndex = leaderboard.findIndex(entry => entry.name === playerName);
+                if (playerIndex !== -1) {
+                    leaderboard.splice(playerIndex, 1);
+                }
+                
+                // Add the new high score
+                const newEntry = {
+                    name: playerName,
+                    score: score,
+                    time: INITIAL_TIME - Math.ceil(gameTime) // Store the time used instead of time remaining
+                };
+                
+                leaderboard.push(newEntry);
+                leaderboard.sort((a, b) => b.score - a.score);
+                
+                // Save to localStorage
+                localStorage.setItem('edgeMaxingLeaderboard', JSON.stringify(leaderboard));
+            }
+            
+            // Show game over popup
+            showGameOverPopup(isNewHighScore);
+        }
+        
+        function showGameOverPopup(isNewHighScore) {
+            // Create popup element
+            const popupElement = document.createElement('div');
+            popupElement.className = 'game-over-popup';
+            popupElement.innerHTML = `
+                <h2>MISSION TERMINATED</h2>
+                <p class="reason">${gameOverReason}</p>
+                ${isNewHighScore ? '<p class="new-high-score">NEW HIGH SCORE!</p>' : ''}
+                <button id="continue-button">CONTINUE</button>
+            `;
+            
+            // Add to game screen
+            document.querySelector('.game-screen').appendChild(popupElement);
+            
+            // Add event listener to the continue button
+            document.getElementById('continue-button').addEventListener('click', () => {
+                // Remove the popup and show the game over screen
+                popupElement.remove();
+                renderGameOverScreen(isNewHighScore);
+            });
+        }
+        
+        // ========== Game Over Screen ==========
+        function renderGameOverScreen(isNewHighScore) {
+            gameState = 'gameOver';
+            
+            // Remember the player name for next time
+            lastPlayerName = playerName;
+            
+            // Save to localStorage for persistence across sessions
+            localStorage.setItem('lastPlayerName', lastPlayerName);
+            
+            // Determine if player won
+            const didWin = score >= TARGET_SCORE;
+            const timeUsed = INITIAL_TIME - Math.max(0, Math.ceil(gameTime));
+            const currentHighScore = getPlayerHighScore(playerName);
+            
+            appElement.innerHTML = `
+                <div class="game-over-screen">
+                    <h1>${didWin ? 'MISSION COMPLETE' : 'MISSION FAILED'}</h1>
+                    
+                    <div class="results">
+                        <h2>== RESULTS ==</h2>
+                        <p class="player-name">AGENT: ${playerName.toUpperCase()}</p>
+                        <p class="final-score">SCORE: ${score}/${TARGET_SCORE}</p>
+                        <p class="final-time">TIME: ${timeUsed}S</p>
+                        ${isNewHighScore ? '<p class="new-high-score">NEW HIGH SCORE!</p>' : `<p>HIGH SCORE: ${currentHighScore}</p>`}
+                        <p class="result-message">${gameOverReason}</p>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button class="restart-button" id="restart-button">
+                            RETRY AS ${playerName.toUpperCase()}
+                        </button>
+                        <button class="new-player-button" id="new-player-button">
+                            NEW AGENT
+                        </button>
+                        <button class="leaderboard-button" id="show-leaderboard-button">
+                            AGENT RECORDS
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners
+            document.getElementById('restart-button').addEventListener('click', () => {
+                // Reuse the same player name
+                startGame();
+            });
+            document.getElementById('new-player-button').addEventListener('click', renderStartScreen);
+            document.getElementById('show-leaderboard-button').addEventListener('click', renderLeaderboard);
+        }
+        
+        // ========== Leaderboard ==========
+        function renderLeaderboard() {
+            gameState = 'leaderboard';
+            
+            let leaderboardContent = '';
+            
+            if (leaderboard.length === 0) {
+                leaderboardContent = `<p class="no-entries">NO RECORDS FOUND. BE THE FIRST AGENT.</p>`;
+            } else {
+                leaderboardContent = `
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>RANK</th>
+                                <th>AGENT</th>
+                                <th>SCORE</th>
+                                <th>TIME</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${leaderboard.map((entry, index) => {
+                                const didWin = entry.score >= TARGET_SCORE;
+                                // For backward compatibility with old leaderboard entries
+                                const timeDisplay = entry.time > INITIAL_TIME ? entry.time + "S" : entry.time + "S";
+                                return `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${entry.name.toUpperCase()}</td>
+                                        <td>${entry.score}/${TARGET_SCORE}</td>
+                                        <td>${timeDisplay}</td>
+                                        <td style="color: ${didWin ? '#33ff66' : '#ff6b6b'}">${didWin ? '[COMPLETE]' : '[FAILED]'}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            appElement.innerHTML = `
+                <div class="leaderboard">
+                    <h1>AGENT RECORDS</h1>
+                    <p>MISSION: SCORE ${TARGET_SCORE} PTS IN ${INITIAL_TIME}S</p>
+                    
+                    ${leaderboardContent}
+                    
+                    <button class="back-button" id="back-button">
+                        RETURN TO BASE
+                    </button>
+                </div>
+            `;
+            
+            // Add event listeners
+            document.getElementById('back-button').addEventListener('click', renderStartScreen);
+        }
+        
+        // Function to create mission success indication
+        function createMissionSuccess() {
+            try {
+                // Remove any existing mission success indicators
+                const existingIndicators = document.querySelectorAll('.mission-success');
+                existingIndicators.forEach(indicator => indicator.remove());
+                
+                // Create the new indicator
+                const indicator = document.createElement('div');
+                indicator.className = 'mission-success';
+                indicator.textContent = 'TARGET REACHED';
+                
+                // Add directly to the body for best positioning
+                document.body.appendChild(indicator);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    indicator.remove();
+                }, 3000);
+            } catch (e) {
+                console.error('Error creating mission success indicator:', e);
+            }
+        }
+        
+        // Add a function to get the player's high score
+        function getPlayerHighScore(name) {
+            if (!name) return 0;
+            
+            const playerEntry = leaderboard.find(entry => entry.name === name);
+            return playerEntry ? playerEntry.score : 0;
+        }
+        
+        // Start the game
+        window.onload = function() {
+            console.log('Window loaded, initializing game...');
+            init();
+        };
+    </script>
+</body>
+</html> 

@@ -1,0 +1,11 @@
+[build]
+  command = "cp public/edge-maxing.html build/ && npm run build"
+  publish = "build"
+
+[[redirects]]
+  from = "/*"
+  to = "/edge-maxing.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18" 
