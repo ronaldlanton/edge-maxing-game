@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Maxing Game</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #282c34;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: calc(10px + 2vmin);
+            color: white;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #33ff66;
+            text-shadow: 0 0 10px rgba(51, 255, 102, 0.5);
+            margin-bottom: 30px;
+        }
+
+        .button {
+            background-color: #33ff66;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #66ff99;
+            transform: scale(1.05);
+        }
+
+        .game-area {
+            border: 2px solid #33ff66;
+            margin: 20px auto;
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .player {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #33ff66;
+            border-radius: 50%;
+            transition: all 0.016s linear;
+        }
+
+        .score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5em;
+            color: #33ff66;
+        }
+
+        .game-over-title {
+            color: #ff3366;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 1.5em;
+            color: #33ff66;
+            margin-bottom: 30px;
+        }
+
+        .leaderboard {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #33ff66;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid rgba(51, 255, 102, 0.3);
+        }
+
+        .leaderboard-entry:last-child {
+            border-bottom: none;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #33ff66;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            width: 200px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #33ff66;
+            border: 1px solid #33ff66;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div id="start-screen" class="screen active">
+            <h1 class="title">Edge Maxing</h1>
+            <input type="text" id="player-name" placeholder="Enter your name">
+            <br>
+            <button class="button" id="start-button">Start Game</button>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="game-area">
+                <div class="player"></div>
+            </div>
+            <div class="footer">
+                <div class="player-info">Player: <span id="current-player"></span></div>
+                <div class="high-score">High Score: <span id="high-score">0</span></div>
+            </div>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+            <h2 class="game-over-title">Game Over!</h2>
+            <div class="final-score">Final Score: <span id="final-score">0</span></div>
+            <button class="button" id="restart-button">Play Again</button>
+            <button class="button" id="leaderboard-button">View Leaderboard</button>
+        </div>
+
+        <div id="leaderboard-screen" class="screen">
+            <h2 class="title">Leaderboard</h2>
+            <div class="leaderboard" id="leaderboard"></div>
+            <button class="button" id="back-button">Back to Start</button>
+        </div>
+    </div>
+
+    <script>
+        let playerName = '';
+        let currentScore = 0;
+        let highScore = 0;
+        let leaderboard = [];
+        let isMoving = false;
+        let velocity = { x: 0, y: 0 };
+        let playerPosition = { x: 50, y: 50 };
+        let lastUpdateTime = 0;
+        let animationFrame = null;
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const leaderboardScreen = document.getElementById('leaderboard-screen');
+        const playerNameInput = document.getElementById('player-name');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const leaderboardButton = document.getElementById('leaderboard-button');
+        const backButton = document.getElementById('back-button');
+        const scoreElement = document.getElementById('score');
+        const finalScoreElement = document.getElementById('final-score');
+        const highScoreElement = document.getElementById('high-score');
+        const currentPlayerElement = document.getElementById('current-player');
+        const leaderboardElement = document.getElementById('leaderboard');
+        const player = document.querySelector('.player');
+        const gameArea = document.querySelector('.game-area');
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function updateLeaderboard() {
+            leaderboardElement.innerHTML = '';
+            if (leaderboard.length === 0) {
+                leaderboardElement.innerHTML = '<div class="leaderboard-entry"><span>No scores yet!</span></div>';
+                return;
+            }
+            leaderboard.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = 'leaderboard-entry';
+                div.innerHTML = `
+                    <span>${index + 1}. ${entry.name}</span>
+                    <span>${Math.floor(entry.score)}</span>
+                `;
+                leaderboardElement.appendChild(div);
+            });
+        }
+
+        function startGame() {
+            const name = playerNameInput.value.trim();
+            if (!name) return;
+
+            playerName = name;
+            currentScore = 0;
+            playerPosition = { x: 50, y: 50 };
+            velocity = { x: 0, y: 0 };
+            currentPlayerElement.textContent = playerName;
+            highScoreElement.textContent = highScore;
+            showScreen('game-screen');
+            lastUpdateTime = performance.now();
+            updateGame();
+        }
+
+        function updateGame(timestamp = performance.now()) {
+            const deltaTime = (timestamp - lastUpdateTime) / 1000;
+            lastUpdateTime = timestamp;
+
+            if (isMoving) {
+                velocity.x += 200 * deltaTime;
+                velocity.y += 200 * deltaTime;
+            } else {
+                velocity.x = Math.max(0, velocity.x - 100 * deltaTime);
+                velocity.y = Math.max(0, velocity.y - 100 * deltaTime);
+            }
+
+            playerPosition.x += velocity.x * deltaTime;
+            playerPosition.y += velocity.y * deltaTime;
+
+            const bounds = gameArea.getBoundingClientRect();
+            if (
+                playerPosition.x < 0 ||
+                playerPosition.x > bounds.width - 20 ||
+                playerPosition.y < 0 ||
+                playerPosition.y > bounds.height - 20
+            ) {
+                gameOver();
+                return;
+            }
+
+            player.style.left = `${playerPosition.x}px`;
+            player.style.top = `${playerPosition.y}px`;
+
+            currentScore += deltaTime * (velocity.x + velocity.y) / 100;
+            scoreElement.textContent = Math.floor(currentScore);
+
+            animationFrame = requestAnimationFrame(updateGame);
+        }
+
+        function gameOver() {
+            if (currentScore > highScore) {
+                highScore = currentScore;
+            }
+            finalScoreElement.textContent = Math.floor(currentScore);
+            leaderboard.push({ name: playerName, score: currentScore });
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard = leaderboard.slice(0, 10);
+            updateLeaderboard();
+            showScreen('game-over-screen');
+            cancelAnimationFrame(animationFrame);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                isMoving = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                isMoving = false;
+            }
+        });
+
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        leaderboardButton.addEventListener('click', () => {
+            updateLeaderboard();
+            showScreen('leaderboard-screen');
+        });
+        backButton.addEventListener('click', () => showScreen('start-screen'));
+    </script>
+</body>
+</html>
