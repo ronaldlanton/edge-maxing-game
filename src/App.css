@@ -1,0 +1,250 @@
+/* General styles */
+.App {
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #33ff66;
+  background-color: #000000;
+  font-family: 'Courier New', monospace;
+}
+
+.App-header {
+  max-width: 800px;
+  padding: 2rem;
+  border: 2px solid #33ff66;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 20px rgba(51, 255, 102, 0.3);
+}
+
+.App-header h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px rgba(51, 255, 102, 0.7);
+}
+
+.App-header p {
+  margin-bottom: 2rem;
+  font-size: 1.2rem;
+}
+
+.game-options {
+  margin: 2rem 0;
+}
+
+.game-button {
+  display: inline-block;
+  background-color: #0a0a0a;
+  color: #33ff66;
+  border: 2px solid #33ff66;
+  padding: 0.8rem 2rem;
+  font-size: 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  text-decoration: none;
+  box-shadow: 0 0 10px rgba(51, 255, 102, 0.3);
+}
+
+.game-button:hover {
+  background-color: #33ff66;
+  color: #0a0a0a;
+  box-shadow: 0 0 15px rgba(51, 255, 102, 0.7);
+}
+
+.game-info {
+  text-align: left;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid #33ff66;
+  border-radius: 8px;
+}
+
+.game-info h2 {
+  margin-bottom: 1rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.game-info ul {
+  padding-left: 1.5rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .App-header {
+    padding: 1.5rem;
+    width: 90%;
+  }
+  
+  .App-header h1 {
+    font-size: 2rem;
+  }
+  
+  .game-button {
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Start Screen */
+.start-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 500px;
+  padding: 2rem;
+}
+
+.start-screen h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #61dafb;
+}
+
+.game-instructions {
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+}
+
+.error {
+  color: #ff6b6b;
+  margin-top: 0.5rem;
+}
+
+.success {
+  color: #33ff66;
+  margin-top: 0.5rem;
+}
+
+.start-button, .register-button {
+  background-color: #61dafb;
+  color: #282c34;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-size: 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.register-button {
+  background-color: #33ff66;
+}
+
+.start-button:hover {
+  background-color: #4fa8d8;
+}
+
+.register-button:hover {
+  background-color: #2be057;
+}
+
+/* Game Screen */
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  padding-bottom: 1rem;
+}
+
+.game-info {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem;
+  background-color: transparent;
+}
+
+.player-info {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #1a1e24;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  width: 80%;
+  max-width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid #61dafb;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.player-info h3 {
+  margin: 0;
+  color: #61dafb;
+  font-size: 1.4rem;
+}
+
+.player-info p {
+  margin: 0.25rem 0 0 0;
+  color: gold;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.player-info.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  z-index: 100;
+  gap: 2rem;
+}
+
+.player-info.footer p {
+  margin: 0;
+  color: #33ff66;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-transform: lowercase;
+  margin-left: 1rem;
+}
+
+.player-info.footer .high-score {
+  text-transform: none;
+}
