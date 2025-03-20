@@ -3,12 +3,14 @@
   publish = "build"
 
 [[redirects]]
+  from = "/edge-maxing.html"
+  to = "/edge-maxing.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
+[build.environment]
+  NODE_VERSION = "18"
