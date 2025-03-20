@@ -7,193 +7,111 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
-            font-family: 'Courier New', monospace;
-            background-color: #000;
-            color: #33ff66;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #282c34;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
+            font-size: calc(10px + 2vmin);
+            color: white;
         }
 
-        .container {
+        .game-container {
+            width: 100%;
             max-width: 800px;
-            width: 90%;
+            margin: 0 auto;
+            padding: 20px;
             text-align: center;
         }
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px rgba(51, 255, 102, 0.7);
+        .title {
+            font-size: 2.5em;
+            color: #33ff66;
+            text-shadow: 0 0 10px rgba(51, 255, 102, 0.5);
+            margin-bottom: 30px;
+        }
+
+        .button {
+            background-color: #33ff66;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #66ff99;
+            transform: scale(1.05);
         }
 
         .game-area {
             border: 2px solid #33ff66;
-            border-radius: 8px;
-            padding: 2rem;
-            margin: 2rem 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            box-shadow: 0 0 20px rgba(51, 255, 102, 0.3);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 30px;
-            background-color: #111;
-            border: 1px solid #33ff66;
-            border-radius: 4px;
+            margin: 20px auto;
             position: relative;
-            margin: 1rem 0;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            background-color: rgba(0, 0, 0, 0.5);
         }
 
-        .progress {
-            width: 0%;
-            height: 100%;
+        .player {
+            position: absolute;
+            width: 20px;
+            height: 20px;
             background-color: #33ff66;
-            transition: width 0.1s ease-out;
+            border-radius: 50%;
+            transition: all 0.016s linear;
         }
 
-        .target-line {
+        .score {
             position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background-color: #fff;
-        }
-
-        .bonus-line {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background-color: #61dafb;
-        }
-
-        .game-button {
-            background-color: #0a0a0a;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5em;
             color: #33ff66;
-            border: 2px solid #33ff66;
-            padding: 0.8rem 2rem;
-            font-size: 1.2rem;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: 'Courier New', monospace;
-            margin: 0.5rem;
-            letter-spacing: 2px;
         }
 
-        .game-button:hover {
-            background-color: #33ff66;
-            color: #0a0a0a;
-            box-shadow: 0 0 15px rgba(51, 255, 102, 0.7);
+        .game-over-title {
+            color: #ff3366;
+            font-size: 2em;
+            margin-bottom: 20px;
         }
 
-        .game-info {
-            text-align: left;
-            margin-top: 2rem;
-            padding: 1.5rem;
-            border: 1px solid #33ff66;
-            border-radius: 8px;
-        }
-
-        .game-info h2 {
-            text-align: center;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .game-info ul {
-            padding-left: 1.5rem;
-            line-height: 1.6;
-        }
-
-        .score-display {
-            font-size: 1.5rem;
-            margin: 1rem 0;
-        }
-
-        .timer-display {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-        }
-
-        .game-over {
-            display: none;
-            text-align: center;
-            margin-top: 2rem;
+        .final-score {
+            font-size: 1.5em;
+            color: #33ff66;
+            margin-bottom: 30px;
         }
 
         .leaderboard {
-            display: none;
-            margin-top: 2rem;
-        }
-
-        .leaderboard table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        .leaderboard th,
-        .leaderboard td {
-            padding: 0.5rem;
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
             border: 1px solid #33ff66;
-            text-align: center;
         }
 
-        .leaderboard th {
-            background-color: rgba(51, 255, 102, 0.2);
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid rgba(51, 255, 102, 0.3);
         }
 
-        @media (max-width: 600px) {
-            .container {
-                width: 95%;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .game-button {
-                padding: 0.6rem 1.5rem;
-                font-size: 1rem;
-            }
-        }
-
-        #start-screen {
-            text-align: center;
-        }
-
-        #game-screen,
-        #game-over-screen,
-        #leaderboard-screen {
-            display: none;
-        }
-
-        .screen {
-            margin: 2rem 0;
-        }
-
-        .input-group {
-            margin: 1rem 0;
-        }
-
-        input[type="text"] {
-            padding: 0.5rem;
-            font-size: 1rem;
-            border: 1px solid #33ff66;
-            background-color: #111;
-            color: #33ff66;
-            border-radius: 4px;
-            margin-right: 0.5rem;
+        .leaderboard-entry:last-child {
+            border-bottom: none;
         }
 
         .footer {
@@ -201,244 +119,205 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            padding: 1rem;
             background-color: rgba(0, 0, 0, 0.8);
-            border-top: 1px solid #33ff66;
+            color: #33ff66;
+            padding: 10px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
         }
 
-        .footer span {
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            width: 200px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
             color: #33ff66;
-            font-size: 1rem;
+            border: 1px solid #33ff66;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Start Screen -->
-        <div id="start-screen" class="screen">
-            <h1>Edge Maxing</h1>
-            <div class="game-info">
-                <h2>How to Play</h2>
-                <ul>
-                    <li>Tap to fill the bar</li>
-                    <li>Don't let it drop to zero or overflow</li>
-                    <li>Cross the white line for 1 point</li>
-                    <li>Cross the blue line for 3 points</li>
-                    <li>Score 40 points in 60 seconds to win!</li>
-                </ul>
-            </div>
-            <div class="input-group">
-                <input type="text" id="player-name" placeholder="Enter your name">
-                <button class="game-button" onclick="startGame()">Start Game</button>
-            </div>
+    <div class="game-container">
+        <div id="start-screen" class="screen active">
+            <h1 class="title">Edge Maxing</h1>
+            <input type="text" id="player-name" placeholder="Enter your name">
+            <br>
+            <button class="button" id="start-button">Start Game</button>
         </div>
 
-        <!-- Game Screen -->
         <div id="game-screen" class="screen">
-            <div class="timer-display">Time: <span id="timer">60</span>s</div>
-            <div class="score-display">Score: <span id="score">0</span></div>
-            <div class="progress-bar" onclick="handleClick()">
-                <div class="progress" id="progress"></div>
-                <div class="target-line" style="left: 75%"></div>
-                <div class="bonus-line" style="left: 85%"></div>
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="game-area">
+                <div class="player"></div>
+            </div>
+            <div class="footer">
+                <div class="player-info">Player: <span id="current-player"></span></div>
+                <div class="high-score">High Score: <span id="high-score">0</span></div>
             </div>
         </div>
 
-        <!-- Game Over Screen -->
         <div id="game-over-screen" class="screen">
-            <h2>Game Over!</h2>
-            <div id="final-score"></div>
-            <button class="game-button" onclick="restartGame()">Play Again</button>
-            <button class="game-button" onclick="showLeaderboard()">View Leaderboard</button>
+            <h2 class="game-over-title">Game Over!</h2>
+            <div class="final-score">Final Score: <span id="final-score">0</span></div>
+            <button class="button" id="restart-button">Play Again</button>
+            <button class="button" id="leaderboard-button">View Leaderboard</button>
         </div>
 
-        <!-- Leaderboard Screen -->
         <div id="leaderboard-screen" class="screen">
-            <h2>Leaderboard</h2>
-            <table id="leaderboard-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Name</th>
-                        <th>Score</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard-body"></tbody>
-            </table>
-            <button class="game-button" onclick="showStartScreen()">Back to Start</button>
+            <h2 class="title">Leaderboard</h2>
+            <div class="leaderboard" id="leaderboard"></div>
+            <button class="button" id="back-button">Back to Start</button>
         </div>
-    </div>
-
-    <div class="footer">
-        <span id="player-display"></span>
-        <span id="high-score-display"></span>
     </div>
 
     <script>
         let playerName = '';
-        let score = 0;
-        let timer = 60;
-        let gameInterval;
-        let progressValue = 0;
-        let isGameOver = false;
-        const decayRate = 0.5;
-        const fillRate = 15;
-        const targetLine = 75;
-        const bonusLine = 85;
+        let currentScore = 0;
+        let highScore = 0;
+        let leaderboard = [];
+        let isMoving = false;
+        let velocity = { x: 0, y: 0 };
+        let playerPosition = { x: 50, y: 50 };
+        let lastUpdateTime = 0;
+        let animationFrame = null;
 
-        // Load leaderboard from localStorage
-        let leaderboard = JSON.parse(localStorage.getItem('edgeMaxingLeaderboard')) || [];
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const leaderboardScreen = document.getElementById('leaderboard-screen');
+        const playerNameInput = document.getElementById('player-name');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const leaderboardButton = document.getElementById('leaderboard-button');
+        const backButton = document.getElementById('back-button');
+        const scoreElement = document.getElementById('score');
+        const finalScoreElement = document.getElementById('final-score');
+        const highScoreElement = document.getElementById('high-score');
+        const currentPlayerElement = document.getElementById('current-player');
+        const leaderboardElement = document.getElementById('leaderboard');
+        const player = document.querySelector('.player');
+        const gameArea = document.querySelector('.game-area');
 
-        function startGame() {
-            playerName = document.getElementById('player-name').value.trim();
-            if (!playerName) {
-                alert('Please enter your name!');
-                return;
-            }
-
-            // Update displays
-            document.getElementById('player-display').textContent = `Player: ${playerName}`;
-            updateHighScoreDisplay();
-
-            // Reset game state
-            score = 0;
-            timer = 60;
-            progressValue = 0;
-            isGameOver = false;
-            document.getElementById('score').textContent = score;
-            document.getElementById('timer').textContent = timer;
-            document.getElementById('progress').style.width = '0%';
-
-            // Show game screen
-            showScreen('game-screen');
-
-            // Start game loop
-            gameInterval = setInterval(gameLoop, 100);
-        }
-
-        function gameLoop() {
-            if (isGameOver) return;
-
-            // Update timer
-            timer -= 0.1;
-            document.getElementById('timer').textContent = Math.ceil(timer);
-
-            // Apply decay
-            progressValue = Math.max(0, progressValue - decayRate);
-            document.getElementById('progress').style.width = `${progressValue}%`;
-
-            // Check game over conditions
-            if (timer <= 0 || progressValue <= 0 || progressValue >= 100) {
-                endGame();
-            }
-        }
-
-        function handleClick() {
-            if (isGameOver) return;
-
-            // Increase progress
-            progressValue = Math.min(100, progressValue + fillRate);
-            document.getElementById('progress').style.width = `${progressValue}%`;
-
-            // Check for scoring
-            if (progressValue >= targetLine && progressValue < bonusLine) {
-                score += 1;
-            } else if (progressValue >= bonusLine) {
-                score += 3;
-            }
-
-            document.getElementById('score').textContent = score;
-        }
-
-        function endGame() {
-            isGameOver = true;
-            clearInterval(gameInterval);
-
-            // Update leaderboard
-            updateLeaderboard();
-
-            // Show game over screen
-            document.getElementById('final-score').textContent = 
-                `Final Score: ${score} | Time: ${Math.ceil(timer)}s`;
-            showScreen('game-over-screen');
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
         }
 
         function updateLeaderboard() {
-            const newEntry = {
-                name: playerName,
-                score: score,
-                time: Math.ceil(timer)
-            };
+            leaderboardElement.innerHTML = '';
+            if (leaderboard.length === 0) {
+                leaderboardElement.innerHTML = '<div class="leaderboard-entry"><span>No scores yet!</span></div>';
+                return;
+            }
+            leaderboard.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = 'leaderboard-entry';
+                div.innerHTML = `
+                    <span>${index + 1}. ${entry.name}</span>
+                    <span>${Math.floor(entry.score)}</span>
+                `;
+                leaderboardElement.appendChild(div);
+            });
+        }
 
-            // Check if player already exists
-            const existingIndex = leaderboard.findIndex(entry => entry.name === playerName);
-            if (existingIndex !== -1) {
-                // Update only if new score is higher
-                if (score > leaderboard[existingIndex].score) {
-                    leaderboard[existingIndex] = newEntry;
-                }
+        function startGame() {
+            const name = playerNameInput.value.trim();
+            if (!name) return;
+
+            playerName = name;
+            currentScore = 0;
+            playerPosition = { x: 50, y: 50 };
+            velocity = { x: 0, y: 0 };
+            currentPlayerElement.textContent = playerName;
+            highScoreElement.textContent = highScore;
+            showScreen('game-screen');
+            lastUpdateTime = performance.now();
+            updateGame();
+        }
+
+        function updateGame(timestamp = performance.now()) {
+            const deltaTime = (timestamp - lastUpdateTime) / 1000;
+            lastUpdateTime = timestamp;
+
+            if (isMoving) {
+                velocity.x += 200 * deltaTime;
+                velocity.y += 200 * deltaTime;
             } else {
-                leaderboard.push(newEntry);
+                velocity.x = Math.max(0, velocity.x - 100 * deltaTime);
+                velocity.y = Math.max(0, velocity.y - 100 * deltaTime);
             }
 
-            // Sort by score (descending)
+            playerPosition.x += velocity.x * deltaTime;
+            playerPosition.y += velocity.y * deltaTime;
+
+            const bounds = gameArea.getBoundingClientRect();
+            if (
+                playerPosition.x < 0 ||
+                playerPosition.x > bounds.width - 20 ||
+                playerPosition.y < 0 ||
+                playerPosition.y > bounds.height - 20
+            ) {
+                gameOver();
+                return;
+            }
+
+            player.style.left = `${playerPosition.x}px`;
+            player.style.top = `${playerPosition.y}px`;
+
+            currentScore += deltaTime * (velocity.x + velocity.y) / 100;
+            scoreElement.textContent = Math.floor(currentScore);
+
+            animationFrame = requestAnimationFrame(updateGame);
+        }
+
+        function gameOver() {
+            if (currentScore > highScore) {
+                highScore = currentScore;
+            }
+            finalScoreElement.textContent = Math.floor(currentScore);
+            leaderboard.push({ name: playerName, score: currentScore });
             leaderboard.sort((a, b) => b.score - a.score);
-
-            // Keep only top 10
             leaderboard = leaderboard.slice(0, 10);
-
-            // Save to localStorage
-            localStorage.setItem('edgeMaxingLeaderboard', JSON.stringify(leaderboard));
+            updateLeaderboard();
+            showScreen('game-over-screen');
+            cancelAnimationFrame(animationFrame);
         }
 
-        function showLeaderboard() {
-            const tbody = document.getElementById('leaderboard-body');
-            tbody.innerHTML = '';
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                isMoving = true;
+            }
+        });
 
-            leaderboard.forEach((entry, index) => {
-                const row = tbody.insertRow();
-                row.insertCell(0).textContent = index + 1;
-                row.insertCell(1).textContent = entry.name;
-                row.insertCell(2).textContent = entry.score;
-                row.insertCell(3).textContent = `${entry.time}s`;
-            });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                isMoving = false;
+            }
+        });
 
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        leaderboardButton.addEventListener('click', () => {
+            updateLeaderboard();
             showScreen('leaderboard-screen');
-        }
-
-        function updateHighScoreDisplay() {
-            const playerHighScore = leaderboard.find(entry => entry.name === playerName);
-            const highScoreText = playerHighScore 
-                ? `High Score: ${playerHighScore.score}` 
-                : 'No previous score';
-            document.getElementById('high-score-display').textContent = highScoreText;
-        }
-
-        function showStartScreen() {
-            showScreen('start-screen');
-        }
-
-        function restartGame() {
-            showStartScreen();
-        }
-
-        function showScreen(screenId) {
-            // Hide all screens
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('game-over-screen').style.display = 'none';
-            document.getElementById('leaderboard-screen').style.display = 'none';
-
-            // Show requested screen
-            document.getElementById(screenId).style.display = 'block';
-        }
-
-        // Initialize
-        showStartScreen();
+        });
+        backButton.addEventListener('click', () => showScreen('start-screen'));
     </script>
 </body>
 </html>
